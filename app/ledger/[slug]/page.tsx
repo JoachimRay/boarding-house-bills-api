@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
-import { formatCurrency, getProject } from "@/lib/projects";
+import { getProject } from "@/lib/projects";
+import { formatCurrency } from "@/lib/ledger";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getProject(slug);
   if (!project) notFound();
 
   return (

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { ROWS } from "../rows";
 import { getProfile } from "@/lib/auth";
+import { db } from "@/db";
+import { customers } from "@/db/schema";
+import { desc } from "drizzle-orm";
+import { CustomerSchema } from "@/lib/definitions";
 
 const corsHeaders = {
 	"Access-Control-Allow-Origin": "*",
@@ -18,7 +21,11 @@ export async function GET(request: Request) {
 		);
 	}
 
-	return NextResponse.json(ROWS, { headers: corsHeaders });
+	const rows = await db.select().from(customers).orderBy(desc(customers.id));
+	return NextResponse.json(
+		rows.map((row) => ({ ...row, balance: Number(row.balance), lastPaid: row.lastPaid })),
+		{ headers: corsHeaders },
+	);
 }
 
 export async function POST(request: Request) {
@@ -38,46 +45,36 @@ export async function POST(request: Request) {
 		);
 	}
 
-	let body: unknown;
-
 	try {
-		body = await request.json();
+		const body: unknown = await request.json();
+		const parsed = CustomerSchema.safeParse(body);
+
+		if (!parsed.success) {
+			return NextResponse.json(
+				{ error: "Invalid customer data", issues: parsed.error.flatten().fieldErrors },
+				{ status: 400, headers: corsHeaders },
+			);
+		}
+
+		const customer = {
+			id: `c${Date.now()}`,
+			name: parsed.data.name,
+			balance: String(parsed.data.balance),
+			lastPaid: parsed.data.lastPaid,
+		};
+
+		await db.insert(customers).values(customer);
+
+		return NextResponse.json(
+			{ ...customer, balance: parsed.data.balance },
+			{ status: 201, headers: corsHeaders },
+		);
 	} catch {
 		return NextResponse.json(
 			{ error: "Request body must be valid JSON" },
 			{ status: 400, headers: corsHeaders },
 		);
 	}
-
-	if (!body || typeof body !== "object") {
-		return NextResponse.json(
-			{ error: "Request body must be a JSON object" },
-			{ status: 400, headers: corsHeaders },
-		);
-	}
-
-	const input = body as Record<string, unknown>;
-	const name = typeof input.name === "string" ? input.name.trim() : "";
-	const balance = input.balance === undefined ? 0 : Number(input.balance);
-	const lastPaid = input.lastPaid === undefined ? "" : String(input.lastPaid);
-
-	if (!name || !Number.isFinite(balance)) {
-		return NextResponse.json(
-			{ error: "name is required and balance must be a number" },
-			{ status: 400, headers: corsHeaders },
-		);
-	}
-
-	const customer = {
-		id: `c${ROWS.length + 1}`,
-		name,
-		balance,
-		lastPaid,
-	};
-
-	ROWS.push(customer);
-
-	return NextResponse.json(customer, { status: 201, headers: corsHeaders });
 }
 
 export function OPTIONS() {

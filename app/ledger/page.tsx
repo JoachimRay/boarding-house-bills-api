@@ -1,8 +1,10 @@
-import { formatCurrency, getProjects } from "@/lib/projects";
+import { getProjects } from "@/lib/projects";
+import { formatCurrency } from "@/lib/ledger";
 import { ProjectSearch } from "./search";
+import { AddCustomer } from "./add-customer";
 
 export default async function LedgerPage() {
-  const projects = getProjects();
+  const projects = await getProjects();
   const outstanding = projects.reduce((total, project) => total + project.balance, 0);
   const paidAccounts = projects.filter((project) => project.balance === 0).length;
 
@@ -27,6 +29,7 @@ export default async function LedgerPage() {
           <span className="text-xs text-zinc-400">{projects.length} records</span>
         </div>
         <ProjectSearch projects={projects} />
+        <AddCustomer />
       </section>
     </main>
   );

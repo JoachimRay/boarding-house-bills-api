@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { ROWS } from "../../rows";
 import { getProfile } from "@/lib/auth";
+import { db } from "@/db";
+import { customers } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 const corsHeaders = {
 	"Access-Control-Allow-Origin": "*",
@@ -22,7 +24,7 @@ export async function GET(
 	}
 
 	const { id } = await params;
-	const row = ROWS.find((item) => item.id === id);
+	const [row] = await db.select().from(customers).where(eq(customers.id, id));
 
 	if (!row) {
 		return NextResponse.json(
@@ -31,7 +33,7 @@ export async function GET(
 		);
 	}
 
-	return NextResponse.json(row, { headers: corsHeaders });
+	return NextResponse.json({ ...row, balance: Number(row.balance) }, { headers: corsHeaders });
 }
 
 export function OPTIONS() {

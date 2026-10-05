@@ -1,11 +1,10 @@
-import { ROWS, type Customer } from "@/app/api/rows";
+import { db } from "@/db";
+import { customers } from "@/db/schema";
+import type { Customer } from "@/app/api/rows";
+import type { LedgerAccount } from "./ledger";
+import { formatCurrency } from "./ledger";
 
-export type Project = Customer & {
-  slug: string;
-  title: string;
-  year: string;
-  summary: string;
-};
+export type Project = LedgerAccount;
 
 function toProject(customer: Customer): Project {
   return {
@@ -20,18 +19,17 @@ function toProject(customer: Customer): Project {
   };
 }
 
-export function getProjects(): Project[] {
-  return ROWS.map(toProject);
+export async function getProjects(): Promise<Project[]> {
+  const rows = await db.select().from(customers);
+  return rows.map((row) => toProject({
+    id: row.id,
+    name: row.name,
+    balance: Number(row.balance),
+    lastPaid: row.lastPaid,
+  }));
 }
 
-export function getProject(slug: string): Project | undefined {
-  return getProjects().find((project) => project.slug === slug);
-}
-
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-  }).format(value);
+export async function getProject(slug: string): Promise<Project | undefined> {
+  const projects = await getProjects();
+  return projects.find((project) => project.slug === slug);
 }

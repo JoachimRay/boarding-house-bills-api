@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { Project } from "@/lib/projects";
-import { formatCurrency } from "@/lib/projects";
+import type { Project } from "@/lib/ledger";
+import { formatCurrency } from "@/lib/ledger";
 
 type Props = { projects: Project[] };
 
