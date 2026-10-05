@@ -1,17 +1,43 @@
 import { NextResponse } from "next/server";
 import { ROWS } from "../rows";
+import { getProfile } from "@/lib/auth";
 
 const corsHeaders = {
 	"Access-Control-Allow-Origin": "*",
 	"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
+	"Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-export function GET() {
+export async function GET(request: Request) {
+	const profile = await getProfile(request);
+
+	if (!profile) {
+		return NextResponse.json(
+			{ error: "Authentication required" },
+			{ status: 401, headers: corsHeaders },
+		);
+	}
+
 	return NextResponse.json(ROWS, { headers: corsHeaders });
 }
 
 export async function POST(request: Request) {
+	const profile = await getProfile(request);
+
+	if (!profile) {
+		return NextResponse.json(
+			{ error: "Authentication required" },
+			{ status: 401, headers: corsHeaders },
+		);
+	}
+
+	if (profile.role !== "admin") {
+		return NextResponse.json(
+			{ error: "Admin access required" },
+			{ status: 403, headers: corsHeaders },
+		);
+	}
+
 	let body: unknown;
 
 	try {
