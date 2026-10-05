@@ -13,11 +13,12 @@ export type Customer = {
   lastPaid: string;
 };
 
-export async function fetchProfile(): Promise<Profile | null> {
+export async function fetchProfile(signal?: AbortSignal): Promise<Profile | null> {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return null;
 
   const response = await fetch("/api/me", {
+    signal,
     headers: {
       Authorization: `Bearer ${sessionData.session.access_token}`,
     },

@@ -8,10 +8,14 @@ export function useSession() {
   useEffect(() => {
     let live = true;
 
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (!live) return;
-      setSession(error ? null : data.session);
-    });
+    supabase.auth.getSession()
+      .then(({ data, error }) => {
+        if (!live) return;
+        setSession(error ? null : data.session);
+      })
+      .catch(() => {
+        if (live) setSession(null);
+      });
 
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
       if (live) setSession(next);

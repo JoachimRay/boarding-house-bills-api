@@ -6,17 +6,20 @@ export function useProfile() {
 
   useEffect(() => {
     let live = true;
+    const controller = new AbortController();
 
-    fetchProfile()
+    fetchProfile(controller.signal)
       .then((row) => {
         if (live) setProfile(row);
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         if (live) setProfile(null);
       });
 
     return () => {
       live = false;
+      controller.abort();
     };
   }, []);
 

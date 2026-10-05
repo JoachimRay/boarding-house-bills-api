@@ -14,13 +14,18 @@ export function SignIn() {
     setError(null);
     setLoading(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
-    if (signInError) setError(signInError.message);
+      if (signInError) setError(signInError.message);
+    } catch {
+      setError("Unable to connect to the authentication service. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
