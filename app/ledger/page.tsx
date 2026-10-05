@@ -1,7 +1,7 @@
 import { formatCurrency, getProjects } from "@/lib/projects";
 import { ProjectSearch } from "./search";
 
-export default async function ProjectsPage() {
+export default async function LedgerPage() {
   const projects = getProjects();
   const outstanding = projects.reduce((total, project) => total + project.balance, 0);
   const paidAccounts = projects.filter((project) => project.balance === 0).length;

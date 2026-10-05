@@ -10,7 +10,7 @@ export default async function ProjectPage({ params }: Props) {
 
   return (
     <main className="mx-auto w-[calc(100%-32px)] max-w-[1000px] py-10 md:w-[calc(100%-48px)]">
-      <a href="/projects" className="text-sm text-zinc-400">← Back to accounts</a>
+      <a href="/ledger" className="text-sm text-zinc-400">← Back to accounts</a>
       <section className="mt-14 flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div><p className="text-[11px] uppercase tracking-[1px] text-zinc-400">TENANT ACCOUNT / {project.id.toUpperCase()}</p><h1 className="mt-3 text-4xl font-bold">{project.title}</h1><p className="mt-3 text-zinc-400">Last payment recorded {project.year}</p></div>
         <span className="border border-zinc-800 px-2.5 py-2 text-xs text-zinc-400">{project.balance === 0 ? "Paid in full" : "Balance due"}</span>
